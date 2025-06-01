@@ -1,1 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Fitness & Nutrition Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .date-display {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .workout-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .calendar-widget, .nutrition-widget, .challenge-widget {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .exercise-item {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .exercise-item.completed {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+        }
+
+        .exercise-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox.checked {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .exercise-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .exercise-details {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .video-container {
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .video-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .video-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .video-link:hover {
+            text-decoration: underline;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 15px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .calendar-day:hover {
+            background: #f0f0f0;
+        }
+
+        .calendar-day.today {
+            background: #667eea;
+            color: white;
+        }
+
+        .calendar-day.completed {
+            background: #4caf50;
+            color: white;
+        }
+
+        .meal-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .meal-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .meal-checkbox.checked {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+
+        .meal-checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .challenge-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .challenge-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+
+        .challenge-progress {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .reset-info {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            color: #1976d2;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 Fitness & Nutrition Tracker</h1>
+            <div class="date-display" id="currentDate"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="workout-section">
+                <h2 class="section-title" id="workoutTitle">Today's Workout Plan</h2>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="completedCount">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="progressPercent">0%</div>
+                        <div class="stat-label">Progress</div>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+
+                <div id="exerciseList">
+                    <!-- Exercises will be populated by JavaScript -->
+                </div>
+
+                <div class="reset-info">
+                    🔄 Your checklist will automatically reset daily at midnight to help you stay consistent!<br>
+                    <small>⚠️ Note: Progress is stored in memory during this session. For persistent storage, host this on GitHub Pages or a web server.</small>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="calendar-widget">
+                    <h3 class="section-title">Calendar</h3>
+                    <div id="calendarHeader"></div>
+                    <div class="calendar" id="calendar">
+                        <!-- Calendar will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="challenge-widget">
+                    <h3 class="section-title">Daily Challenges</h3>
+                    <div id="challengeList">
+                        <!-- Challenges will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="nutrition-widget">
+                    <h3 class="section-title">Nutrition Tracking</h3>
+                    <div id="proteinInfo" style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <!-- Protein info will be populated by JavaScript -->
+                    </div>
+                    <div id="mealList">
+                        <!-- Meals will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FitnessTracker {
+            constructor() {
+                // Get current day to determine workout
+                const today = new Date().getDay(); // 0=Sunday, 1=Monday, etc.
+                
+                this.workoutSchedule = {
+                    1: "Upper Body Focus", // Monday
+                    2: "Lower Body + Core", // Tuesday  
+                    3: "Rest Day", // Wednesday
+                    4: "Upper Body Focus", // Thursday
+                    5: "Full Body", // Friday
+                    6: "Rest Day", // Saturday
+                    0: "Rest Day" // Sunday
+                };
+
+                this.todayWorkout = this.workoutSchedule[today];
+                
+                // Exercises based on day
+                if (today === 1 || today === 4) { // Monday/Thursday - Upper Body
+                    this.exercises = [
+                        {
+                            id: 1,
+                            name: "Push-ups",
+                            details: "3 sets of 8-12 reps",
+                            video: {
+                                title: "Perfect Push-up Form",
+                                url: "https://www.youtube.com/watch?v=IODxDxX7oi4"
+                            }
+                        },
+                        {
+                            id: 2,
+                            name: "Pike Push-ups",
+                            details: "3 sets of 8-12 reps",
+                            video: {
+                                title: "Pike Push-up Tutorial",
+                                url: "https://www.youtube.com/watch?v=x4YNi4BABRM"
+                            }
+                        },
+                        {
+                            id: 3,
+                            name: "Tricep Dips",
+                            details: "3 sets of 10-15 reps",
+                            video: {
+                                title: "Tricep Dips - Chair/Couch",
+                                url: "https://www.youtube.com/watch?v=0326dy_-CzM"
+                            }
+                        },
+                        {
+                            id: 4,
+                            name: "Inverted Rows",
+                            details: "3 sets of 8-12 reps",
+                            video: {
+                                title: "Table Inverted Rows",
+                                url: "https://www.youtube.com/watch?v=rloXYB8M3vU"
+                            }
+                        },
+                        {
+                            id: 5,
+                            name: "Plank Hold",
+                            details: "3 sets of 30-60 seconds",
+                            video: {
+                                title: "Perfect Plank Form",
+                                url: "https://www.youtube.com/watch?v=ASdvN_XEl_c"
+                            }
+                        }
+                    ];
+                } else if (today === 2) { // Tuesday - Lower Body + Core
+                    this.exercises = [
+                        {
+                            id: 1,
+                            name: "Bodyweight Squats",
+                            details: "4 sets of 15-20 reps",
+                            video: {
+                                title: "Bodyweight Squat Form",
+                                url: "https://www.youtube.com/watch?v=YaXPRqUwItQ"
+                            }
+                        },
+                        {
+                            id: 2,
+                            name: "Jump Squats",
+                            details: "3 sets of 10-15 reps",
+                            video: {
+                                title: "Jump Squat Tutorial",
+                                url: "https://www.youtube.com/watch?v=A-cFYWvaHr0"
+                            }
+                        },
+                        {
+                            id: 3,
+                            name: "Lunges",
+                            details: "3 sets of 12 each leg",
+                            video: {
+                                title: "Perfect Lunge Form",
+                                url: "https://www.youtube.com/watch?v=QE22WNYcbsY"
+                            }
+                        },
+                        {
+                            id: 4,
+                            name: "Plank Hold",
+                            details: "3 sets of 30-60 seconds",
+                            video: {
+                                title: "Perfect Plank Form",
+                                url: "https://www.youtube.com/watch?v=ASdvN_XEl_c"
+                            }
+                        },
+                        {
+                            id: 5,
+                            name: "Mountain Climbers",
+                            details: "3 sets of 20 total",
+                            video: {
+                                title: "Mountain Climber Tutorial",
+                                url: "https://www.youtube.com/watch?v=nmwgirgXLYM"
+                            }
+                        }
+                    ];
+                } else if (today === 5) { // Friday - Full Body
+                    this.exercises = [
+                        {
+                            id: 1,
+                            name: "Push-ups",
+                            details: "2 sets of 8-10 reps",
+                            video: {
+                                title: "Perfect Push-up Form",
+                                url: "https://www.youtube.com/watch?v=IODxDxX7oi4"
+                            }
+                        },
+                        {
+                            id: 2,
+                            name: "Bodyweight Squats",
+                            details: "2 sets of 15 reps",
+                            video: {
+                                title: "Bodyweight Squat Form",
+                                url: "https://www.youtube.com/watch?v=YaXPRqUwItQ"
+                            }
+                        },
+                        {
+                            id: 3,
+                            name: "Tricep Dips",
+                            details: "2 sets of 8-10 reps",
+                            video: {
+                                title: "Tricep Dips - Chair/Couch",
+                                url: "https://www.youtube.com/watch?v=0326dy_-CzM"
+                            }
+                        },
+                        {
+                            id: 4,
+                            name: "Plank Hold",
+                            details: "2 sets of 30 seconds",
+                            video: {
+                                title: "Perfect Plank Form",
+                                url: "https://www.youtube.com/watch?v=ASdvN_XEl_c"
+                            }
+                        },
+                        {
+                            id: 5,
+                            name: "HIIT Circuit",
+                            details: "15 min: 30s work, 30s rest",
+                            video: {
+                                title: "Bodyweight HIIT Workout",
+                                url: "https://www.youtube.com/watch?v=ml6cT4AZdqI"
+                            }
+                        }
+                    ];
+                } else { // Rest Days
+                    this.exercises = [
+                        {
+                            id: 1,
+                            name: "Light Stretching",
+                            details: "10-15 minutes",
+                            video: {
+                                title: "Full Body Stretching",
+                                url: "https://www.youtube.com/watch?v=g_tea8ZNk5A"
+                            }
+                        },
+                        {
+                            id: 2,
+                            name: "Walk or Light Activity",
+                            details: "20-30 minutes",
+                            video: {
+                                title: "Benefits of Walking",
+                                url: "https://www.youtube.com/watch?v=F8tg4uGmEP0"
+                            }
+                        }
+                    ];
+                }
+
+                // Protein requirements based on workout day
+                this.proteinSchedule = {
+                    1: { day: "Monday - Upper Body", protein: "45-50g", foods: "Musashi shake (25g) + 3 eggs (18g) + chicken (20g)" },
+                    2: { day: "Tuesday - Lower Body", protein: "50-55g", foods: "Musashi shake (25g) + fish curry (25g) + eggs (12g)" },
+                    3: { day: "Wednesday - Rest", protein: "35-40g", foods: "Musashi shake (25g) + 2 eggs (12g) + dal (8g)" },
+                    4: { day: "Thursday - Upper Body", protein: "45-50g", foods: "Musashi shake (25g) + chicken (20g) + eggs (12g)" },
+                    5: { day: "Friday - Full Body", protein: "50-55g", foods: "Musashi shake (25g) + fish (25g) + eggs (12g)" },
+                    6: { day: "Saturday - Rest", protein: "35-40g", foods: "Musashi shake (25g) + 2 eggs (12g) + dal (8g)" },
+                    0: { day: "Sunday - Rest", protein: "35-40g", foods: "Musashi shake (25g) + 2 eggs (12g) + dal (8g)" }
+                };
+
+                this.todayProtein = this.proteinSchedule[today];
+
+                this.meals = [
+                    { id: 1, name: "Breakfast (Oats + Musashi Shake)", time: "Morning" },
+                    { id: 2, name: "Mid-Morning Snack", time: "10:00 AM" },
+                    { id: 3, name: "Lunch (Rice + Protein)", time: "Afternoon" },
+                    { id: 4, name: "Pre-Workout Protein", time: "4:00 PM" },
+                    { id: 5, name: "Dinner (Rice/Roti + Protein)", time: "Evening" }
+                ];
+
+                this.challenges = [
+                    { id: 1, name: "Complete all exercises", target: 6, current: 0 },
+                    { id: 2, name: "Drink 3L water", target: 8, current: 0 },
+                    { id: 3, name: "All meals on time", target: 5, current: 0 }
+                ];
+
+                this.init();
+            }
+
+            init() {
+                this.loadData();
+                this.checkDailyReset();
+                this.renderWorkoutTitle();
+                this.renderProteinInfo();
+                this.renderExercises();
+                this.renderMeals();
+                this.renderChallenges();
+                this.renderCalendar();
+                this.updateStats();
+                this.updateDate();
+            }
+
+            checkDailyReset() {
+                const today = new Date().toDateString();
+                
+                if (this.lastReset !== today) {
+                    // Reset all data for new day
+                    this.lastReset = today;
+                    this.exerciseProgress = {};
+                    this.mealProgress = {};
+                    this.challengeProgress = {};
+                }
+            }
+
+            loadData() {
+                // Initialize with empty objects (in-memory storage)
+                this.exerciseProgress = this.exerciseProgress || {};
+                this.mealProgress = this.mealProgress || {};
+                this.challengeProgress = this.challengeProgress || {};
+                this.lastReset = this.lastReset || new Date().toDateString();
+            }
+
+            saveData() {
+                // Data is already saved in memory, no localStorage needed
+                // This method is kept for compatibility but does nothing
+            }
+
+            updateDate() {
+                const now = new Date();
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                };
+                document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+            }
+
+            toggleExercise(exerciseId) {
+                this.exerciseProgress[exerciseId] = !this.exerciseProgress[exerciseId];
+                this.saveData();
+                this.renderExercises();
+                this.updateStats();
+                this.updateChallenges();
+            }
+
+            toggleMeal(mealId) {
+                this.mealProgress[mealId] = !this.mealProgress[mealId];
+                this.saveData();
+                this.renderMeals();
+                this.updateChallenges();
+            }
+
+            updateChallenges() {
+                // Update exercise challenge
+                const completedExercises = Object.values(this.exerciseProgress).filter(Boolean).length;
+                this.challenges[0].current = completedExercises;
+
+                // Update meal challenge
+                const completedMeals = Object.values(this.mealProgress).filter(Boolean).length;
+                this.challenges[2].current = completedMeals;
+
+                this.renderChallenges();
+            }
+
+            renderExercises() {
+                const container = document.getElementById('exerciseList');
+                container.innerHTML = '';
+
+                this.exercises.forEach(exercise => {
+                    const isCompleted = this.exerciseProgress[exercise.id];
+                    const exerciseDiv = document.createElement('div');
+                    exerciseDiv.className = `exercise-item ${isCompleted ? 'completed' : ''}`;
+                    
+                    exerciseDiv.innerHTML = `
+                        <div class="exercise-header">
+                            <div class="checkbox ${isCompleted ? 'checked' : ''}" 
+                                 onclick="tracker.toggleExercise(${exercise.id})"></div>
+                            <div class="exercise-name">${exercise.name}</div>
+                        </div>
+                        <div class="exercise-details">${exercise.details}</div>
+                        <div class="video-container">
+                            <div class="video-title">📹 ${exercise.video.title}</div>
+                            <a href="${exercise.video.url}" target="_blank" class="video-link">
+                                Watch Tutorial →
+                            </a>
+                        </div>
+                    `;
+                    
+                    container.appendChild(exerciseDiv);
+                });
+            }
+
+            renderMeals() {
+                const container = document.getElementById('mealList');
+                container.innerHTML = '';
+
+                this.meals.forEach(meal => {
+                    const isCompleted = this.mealProgress[meal.id];
+                    const mealDiv = document.createElement('div');
+                    mealDiv.className = 'meal-item';
+                    
+                    mealDiv.innerHTML = `
+                        <div class="meal-checkbox ${isCompleted ? 'checked' : ''}" 
+                             onclick="tracker.toggleMeal(${meal.id})"></div>
+                        <div>
+                            <div style="font-weight: 600;">${meal.name}</div>
+                            <div style="font-size: 0.8rem; color: #666;">${meal.time}</div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(mealDiv);
+                });
+            }
+
+            renderChallenges() {
+                const container = document.getElementById('challengeList');
+                container.innerHTML = '';
+
+                this.challenges.forEach(challenge => {
+                    const challengeDiv = document.createElement('div');
+                    challengeDiv.className = 'challenge-item';
+                    
+                    const percentage = Math.round((challenge.current / challenge.target) * 100);
+                    
+                    challengeDiv.innerHTML = `
+                        <div class="challenge-title">${challenge.name}</div>
+                        <div class="challenge-progress">
+                            ${challenge.current}/${challenge.target} completed (${percentage}%)
+                        </div>
+                        <div class="progress-bar" style="margin-top: 8px;">
+                            <div class="progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(challengeDiv);
+                });
+            }
+
+            renderCalendar() {
+                const calendar = document.getElementById('calendar');
+                const header = document.getElementById('calendarHeader');
+                
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                
+                const monthNames = ["January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"];
+                
+                header.innerHTML = `<h4>${monthNames[month]} ${year}</h4>`;
+                
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                calendar.innerHTML = '';
+                
+                // Day headers
+                const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                dayHeaders.forEach(day => {
+                    const dayElement = document.createElement('div');
+                    dayElement.textContent = day;
+                    dayElement.style.fontWeight = 'bold';
+                    dayElement.style.color = '#666';
+                    calendar.appendChild(dayElement);
+                });
+                
+                // Empty cells for days before month starts
+                for (let i = 0; i < firstDay; i++) {
+                    calendar.appendChild(document.createElement('div'));
+                }
+                
+                // Calendar days
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'calendar-day';
+                    dayElement.textContent = day;
+                    
+                    if (day === now.getDate()) {
+                        dayElement.classList.add('today');
+                    }
+                    
+                    calendar.appendChild(dayElement);
+                }
+            }
+
+            renderWorkoutTitle() {
+                document.getElementById('workoutTitle').textContent = `${this.todayWorkout} - Today's Plan`;
+            }
+
+            renderProteinInfo() {
+                const proteinContainer = document.getElementById('proteinInfo');
+                proteinContainer.innerHTML = `
+                    <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px;">
+                        🥛 ${this.todayProtein.day}
+                    </div>
+                    <div style="font-size: 0.9rem; margin-bottom: 5px;">
+                        <strong>Target:</strong> ${this.todayProtein.protein} protein
+                    </div>
+                    <div style="font-size: 0.85rem; color: #555;">
+                        <strong>Sources:</strong> ${this.todayProtein.foods}
+                    </div>
+                `;
+            }
+
+            updateStats() {
+                const completed = Object.values(this.exerciseProgress).filter(Boolean).length;
+                const total = this.exercises.length;
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+                
+                document.getElementById('completedCount').textContent = completed;
+                document.getElementById('totalCount').textContent = total;
+                document.getElementById('progressPercent').textContent = percentage + '%';
+                document.getElementById('progressBar').style.width = percentage + '%';
+            }
+        }
+
+        // Initialize the tracker
+        const tracker = new FitnessTracker();
+
+        // Update every minute to check for daily reset
+        setInterval(() => {
+            tracker.checkDailyReset();
+        }, 60000);
+    </script>
+</body>
+</html>
